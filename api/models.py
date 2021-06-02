@@ -1,4 +1,7 @@
+from django.contrib.auth import get_user_model
 from django.db import models
+
+User = get_user_model()
 
 
 class Title(models.Model):
@@ -9,6 +12,7 @@ class Title(models.Model):
     year = models.IntegerField(
         'Год выпуска',
         blank=True,
+        null=True,
         db_index=True,
     )
     description = models.TextField(
@@ -30,6 +34,11 @@ class Title(models.Model):
         null=True,
         verbose_name='Категория',
         related_name='titles',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='titles'
     )
 
     class Meta:
