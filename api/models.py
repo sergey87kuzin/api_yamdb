@@ -6,38 +6,6 @@ User = get_user_model()
 SCORE_CHOICES = zip(range(1, 11), range(1, 11))
 
 
-class Category(models.Model):
-    name = models.CharField('Название категории', max_length=200)
-    slug = models.SlugField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Genre(models.Model):
-    name = models.CharField('Название жанра', max_length=200)
-    slug = models.SlugField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Title(models.Model):
-    name = models.CharField('Название произведения', max_length=200)
-    year = models.IntegerField('Год публикации', blank=True, null=True)
-    description = models.TextField('Описание', blank=True, null=True)
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='titles'
-    )
-    genres = models.ManyToManyField(Genre, blank=True)
-    category = models.ForeignKey(
-        Category, models.SET_NULL, related_name='titles', blank=True, null=True
-    )
-
-    def __str__(self):
-        return self.name
-
-
 class Review(models.Model):
     text = models.TextField('Текст')
     author = models.ForeignKey(
@@ -58,7 +26,7 @@ class Review(models.Model):
         return self.text[:15]
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     text = models.TextField('Текст')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments'
