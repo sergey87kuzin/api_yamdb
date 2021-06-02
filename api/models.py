@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
-CHOICES = (('user', 'user'), ('moderator', 'moderator'), ('admin', 'admin'),)
+CHOICES = (('user', 'u'), ('moderator', 'm'), ('admin', 'a'),)
 
 
 class UserManager(BaseUserManager):
@@ -13,9 +13,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, **extra_fields):
-        # extra_fields.setdefault('role', 'admin')
-        # extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email=email, role='a', **extra_fields)
+        return self.create_user(email=email, role='admin', **extra_fields)
 
     def all(self):
         return self.get_queryset()
@@ -30,7 +28,7 @@ class User(AbstractBaseUser):
     role = models.CharField(max_length=10, choices=CHOICES, blank=True,
                             default='user')
     password = models.CharField(max_length=128, verbose_name='password',
-                                blank=True, null=True)
+                                blank=True)
 
     objects = UserManager()
 
@@ -43,3 +41,4 @@ class User(AbstractBaseUser):
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
         return self
+
