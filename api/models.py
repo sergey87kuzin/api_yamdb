@@ -8,34 +8,35 @@ class Title(models.Model):
     )
     year = models.IntegerField(
         'Год выпуска',
-        null=False,
+        blank=True,
         db_index=True,
     )
     description = models.TextField(
         max_length=1000,
         blank=True,
-        null=True,
         verbose_name='Описание',
     )
     genres = models.ManyToManyField(
         'Genre',
-        verbose_name='Жанр'
+        blank=True,
+        verbose_name='Жанр',
+        related_name='titles',
     )
 
     category = models.ForeignKey(
         'Category',
         models.SET_NULL,
-        related_name='titles',
         blank=True,
         null=True,
-        verbose_name='Категория'
+        verbose_name='Категория',
+        related_name='titles',
     )
 
     class Meta:
         ordering = ['-id']
 
     def __str__(self):
-        return self.name, self.genres, self.category
+        return self.name
 
 
 class Category(models.Model):
