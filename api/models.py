@@ -121,7 +121,7 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
-      
+
 SCORE_CHOICES = zip(range(1, 11), range(1, 11))
 
 
@@ -151,7 +151,7 @@ class Comment(models.Model):
         User, on_delete=models.CASCADE, related_name='comments'
     )
     review = models.ForeignKey(
-            Review, on_delete=models.CASCADE, related_name='comments'
+        Review, on_delete=models.CASCADE, related_name='comments'
     )
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True
