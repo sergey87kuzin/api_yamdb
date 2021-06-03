@@ -9,7 +9,7 @@ class AdminPermission(permissions.BasePermission):
 
 class SelfMadeAdminPermission(permissions.BasePermission):
 
-    def has_permissions(self, request, view):
+    def has_permission(self, request, view):
         if request.user.role != 'admin':
             return not request.data.get('role')
         return True

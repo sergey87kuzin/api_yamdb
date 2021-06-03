@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User, Title, Genre, Category
+from .models import Category, Genre, Title, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -9,7 +9,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = User
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
+            'confirmation_code': {'write_only': True}
         }
 
 
