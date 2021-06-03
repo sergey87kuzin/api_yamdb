@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import Title, Category, Genre
+from .models import User, Title, Category, Genre
+
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('email', 'first_name', 'last_name',
+                    'username', 'bio', 'role')
+    search_fields = ('username',)
+    empty_value_display = '-пусто-'
+
+
+admin.site.register(User, UserAdmin)
 
 
 class TitleAdmin(admin.ModelAdmin):

@@ -1,6 +1,16 @@
 from rest_framework import serializers
 
-from .models import Title, Genre, Category
+from .models import User, Title, Genre, Category
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = '__all__'
+        model = User
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
 
 class TitleSerializer(serializers.ModelSerializer):
