@@ -25,13 +25,17 @@ def send_mail(self):
     # if self.user.confirmation_code:
     #     code=self.user.confirmation_code
     #     send_mail('Your code', f'your confirmation code is {code}',
-    #     'gbgtwvkby@example.com', [email], fail_silently=False)
+    #     'gbgtwvkby@example.com', [email,], fail_silently=False)
     #     return code
     code = make_random_password(self)
     user = User.objects.create_user(email=email)
-    user.password = code
+    data = {'username': code, 'password': code}
+    serializer = UserSerializer(user, data=data,
+                                partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
     # send_mail('Your code', f'your confirmation code is {code}',
-    #           'gbgtwvkby@example.com', [email], fail_silently=False)
+    #           'gbgtwvkby@example.com', [email, ], fail_silently=False)
     return Response(code, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])

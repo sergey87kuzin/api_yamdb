@@ -2,9 +2,10 @@ import jwt
 
 from django.conf import settings
 
-from rest_framework import authentication, exceptions
+from rest_framework import authentication, exceptions, status
 
 from .models import User
+
 
 
 class JWTAuthentication(authentication.BaseAuthentication):
@@ -82,3 +83,11 @@ class JWTAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed(msg)
 
         return (user, token)
+    
+    def authenticate_header(self, request):
+        """
+        Return a string to be used as the value of the `WWW-Authenticate`
+        header in a `401 Unauthenticated` response, or `None` if the
+        authentication scheme should return `403 Permission Denied` responses.
+        """
+        return f'you need to identificate'
