@@ -124,6 +124,7 @@ class Genre(models.Model):
 
 SCORE_CHOICES = zip(range(1, 11), range(1, 11))
 
+
 class Review(models.Model):
     text = models.TextField('Текст')
     author = models.ForeignKey(
@@ -144,7 +145,7 @@ class Review(models.Model):
         return self.text[:15]
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     text = models.TextField('Текст')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments'
