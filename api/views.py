@@ -15,6 +15,7 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .filters import TitleFilter
 from .models import Category, Comment, Genre, Review, Title, User
 from .permissions import (
     AdminPermission, IsAdminOrReadOnly, OwnerAdminModeratorReadonly,
@@ -121,11 +122,12 @@ class CreateListDestroyViewSet(
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().order_by('name')
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['name', 'year', 'category__slug', 'genre__slug']
+    filterset_class = TitleFilter
+    filterset_fields = ['name', 'year', 'category', 'genre']
 
     def get_serializer_class(self):
         if self.action in ['create', 'partial_update', 'update']:
