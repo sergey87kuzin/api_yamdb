@@ -61,7 +61,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        exclude = ('id',)
+        fields = '__all__'
         lookup_field = 'slug'
 
 
@@ -84,6 +84,8 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
 
 class TitleCreateSerializer(serializers.ModelSerializer):
+    author = SlugRelatedField(slug_field='username',
+                              queryset=User.objects.all())
     category = SlugRelatedField(
         slug_field='slug', queryset=Category.objects.all()
     )
@@ -92,5 +94,5 @@ class TitleCreateSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        exclude = ('author',)
+        fields = '__all__'
         model = Title
