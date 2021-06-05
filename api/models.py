@@ -66,7 +66,6 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         'Genre',
-        through='Genre',
         blank=True,
         verbose_name='Жанр',
         related_name='titles',
@@ -86,9 +85,6 @@ class Title(models.Model):
         related_name='titles'
     )
 
-    class Meta:
-        ordering = ['-id']
-
     def __str__(self):
         return self.name
 
@@ -103,6 +99,9 @@ class Category(models.Model):
         unique=True,
         verbose_name='Slug',
     )
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -119,8 +118,11 @@ class Genre(models.Model):
         verbose_name='Slug'
     )
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
-        return self.name
+        return self.slug
 
 
 SCORE_CHOICES = zip(range(1, 11), range(1, 11))

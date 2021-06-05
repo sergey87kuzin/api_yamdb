@@ -57,9 +57,10 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Genre
-        fields = '__all__'
+        exclude = ('id',)
         lookup_field = 'slug'
 
 
@@ -78,7 +79,7 @@ class TitleCreateSerializer(serializers.ModelSerializer):
 
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
-    genre = GenreSerializer(read_only=True, many=True)
+    genre = GenreSerializer(many=True)
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):
