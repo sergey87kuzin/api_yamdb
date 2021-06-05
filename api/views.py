@@ -122,7 +122,7 @@ class CreateListDestroyViewSet(
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthenticated,)
     pagination_class = PageNumberPagination
     filter_backends = [filters.SearchFilter]
     search_fields = ('name', 'year', 'category__slug', 'genre__slug')
@@ -133,7 +133,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleReadSerializer
 
     def perform_create(self, serializer):
-        print(Title.objects.values())
         serializer.save(author=self.request.user)
 
 
