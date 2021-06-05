@@ -3,8 +3,11 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, viewsets
+from rest_framework import filters, mixins, viewsets
 from rest_framework.decorators import api_view
+from rest_framework.mixins import (
+    CreateModelMixin, DestroyModelMixin, ListModelMixin,
+)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly,
@@ -12,11 +15,15 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Comment, Review, Title, User
+from .models import Category, Comment, Genre, Review, Title, User
 from .permissions import (
-    AdminPermission, OwnerAdminModeratorReadonly, SelfMadeAdminPermission,
+    AdminPermission, IsAdminOrReadOnly, OwnerAdminModeratorReadonly,
+    SelfMadeAdminPermission,
 )
-from .serializers import CommentSerializer, ReviewSerializer, UserSerializer
+from .serializers import (
+    CategorySerializer, CommentSerializer, GenreSerializer, ReviewSerializer,
+    TitleCreateSerializer, TitleReadSerializer, UserSerializer,
+)
 
 
 @api_view(['POST'])
@@ -104,3 +111,45 @@ class CommentsViewSet(viewsets.ModelViewSet):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, review=review)
+
+
+class CreateListDestroyViewSet(
+    DestroyModelMixin, CreateModelMixin,
+    ListModelMixin, viewsets.GenericViewSet
+):
+    pass
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = PageNumberPagination
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'partial_update', 'update']:
+            return TitleCreateSerializer
+        return TitleReadSerializer
+
+    def perform_create(self, serializer):
+        print(Title.objects.values())
+        serializer.save(author=self.request.user)
+
+
+class CategoryViewSet(CreateListDestroyViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = PageNumberPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
+
+class GenreViewSet(CreateListDestroyViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = PageNumberPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
