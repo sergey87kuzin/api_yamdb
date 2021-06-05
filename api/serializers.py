@@ -50,7 +50,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         exclude = ('id',)
         model = Category
@@ -58,18 +57,28 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Genre
         exclude = ('id',)
         lookup_field = 'slug'
 
 
+class TitleCreateSerializer(serializers.ModelSerializer):
+    category = SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all()
+    )
+    genre = SlugRelatedField(
+        slug_field='slug', many=True, queryset=Genre.objects.all()
+    )
+
+    class Meta:
+        exclude = ('author',)
+        model = Title
+
+
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
-    genres = SlugRelatedField(
-        slug_field='slug', many=True, read_only=True
-    )
+    genre = GenreSerializer(read_only=True, many=True)
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):
@@ -77,19 +86,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
             title_rate=Avg('reviews__score')
         ).filter(id=obj.id).first()
         return rating.title_rate
-
-    class Meta:
-        exclude = ('author',)
-        model = Title
-
-
-class TitleCreateSerializer(serializers.ModelSerializer):
-    category = SlugRelatedField(
-        slug_field='slug', queryset=Category.objects.all()
-    )
-    genres = SlugRelatedField(
-        slug_field='slug', many=True, queryset=Genre.objects.all()
-    )
 
     class Meta:
         exclude = ('author',)
