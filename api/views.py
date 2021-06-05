@@ -122,7 +122,7 @@ class CreateListDestroyViewSet(
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
     filter_backends = [filters.SearchFilter]
     search_fields = ('name', 'year', 'category__slug', 'genre__slug')
