@@ -133,7 +133,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleReadSerializer
 
     def perform_create(self, serializer):
-        print(Title.objects.values())
         serializer.save(author=self.request.user)
 
 
