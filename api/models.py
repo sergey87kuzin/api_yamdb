@@ -37,7 +37,7 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', ]
 
-    class Meta():
+    class Meta:
         ordering = ('-id',)
 
     def __str__(self):
@@ -85,9 +85,6 @@ class Title(models.Model):
         related_name='titles'
     )
 
-    class Meta:
-        ordering = ['-id']
-
     def __str__(self):
         return self.name
 
@@ -103,6 +100,9 @@ class Category(models.Model):
         verbose_name='Slug',
     )
 
+    class Meta:
+        ordering = ('name',)
+
     def __str__(self):
         return self.name
 
@@ -117,6 +117,9 @@ class Genre(models.Model):
         unique=True,
         verbose_name='Slug'
     )
+
+    class Meta:
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
