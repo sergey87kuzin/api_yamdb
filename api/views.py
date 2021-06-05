@@ -124,8 +124,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
-    filter_backends = [filters.SearchFilter]
-    search_fields = ('name', 'year', 'category__slug', 'genre__slug')
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['name', 'year', 'category__slug', 'genre__slug']
 
     def get_serializer_class(self):
         if self.action in ['create', 'partial_update', 'update']:
