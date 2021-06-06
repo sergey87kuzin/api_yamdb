@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -57,7 +58,7 @@ class Title(models.Model):
         verbose_name='Название произведения',
     )
     year = models.IntegerField(
-        'Год выпуска',
+        verbose_name='Год выпуска',
         blank=True,
         null=True,
         db_index=True,
@@ -128,23 +129,25 @@ class Genre(models.Model):
         return self.slug
 
 
-SCORE_CHOICES = zip(range(1, 11), range(1, 11))
-
-
 class Review(models.Model):
-    text = models.TextField('Текст')
+    text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews'
     )
-    score = models.IntegerField(choices=SCORE_CHOICES)
+    score = models.IntegerField(
+        verbose_name='Оценка произведения',
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True
+        verbose_name='Дата добавления', auto_now_add=True
     )
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews'
     )
 
     class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
         ordering = ('-pub_date',)
 
     def __str__(self):
@@ -152,7 +155,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    text = models.TextField('Текст')
+    text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments'
     )
@@ -160,10 +163,12 @@ class Comment(models.Model):
         Review, on_delete=models.CASCADE, related_name='comments'
     )
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True
+        verbose_name='Дата добавления', auto_now_add=True
     )
 
     class Meta:
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"
         ordering = ('-pub_date',)
 
     def __str__(self):
