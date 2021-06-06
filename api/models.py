@@ -21,16 +21,20 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    email = models.EmailField(max_length=40, unique=True)
-    first_name = models.CharField(max_length=30, blank=True, null=True)
-    last_name = models.CharField(max_length=30, blank=True)
-    username = models.CharField(max_length=40, unique=True)
-    bio = models.TextField(blank=True, null=True,)
+    email = models.EmailField(max_length=40, unique=True, verbose_name='email')
+    first_name = models.CharField(max_length=30, blank=True, null=True,
+                                  verbose_name='first_name')
+    last_name = models.CharField(max_length=30, blank=True,
+                                 verbose_name='last_name')
+    username = models.CharField(max_length=40, unique=True,
+                                verbose_name='username')
+    bio = models.TextField(blank=True, null=True, verbose_name='biography')
     role = models.CharField(max_length=10, choices=settings.ROLES, blank=True,
-                            default=settings.USER)
+                            default=settings.USER, verbose_name='role')
     password = models.CharField(max_length=128, verbose_name='password',
                                 blank=True)
-    confirmation_code = models.CharField(max_length=30, blank=True)
+    confirmation_code = models.CharField(max_length=30, blank=True,
+                                         verbose_name='token')
 
     objects = UserManager()
 
@@ -38,6 +42,8 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['username', ]
 
     class Meta:
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
         ordering = ('-id',)
 
     def __str__(self):
