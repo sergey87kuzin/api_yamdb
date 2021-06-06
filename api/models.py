@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from .validators import validator_year
+
 
 class UserManager(BaseUserManager):
 
@@ -21,16 +23,20 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    email = models.EmailField(max_length=40, unique=True)
-    first_name = models.CharField(max_length=30, blank=True, null=True)
-    last_name = models.CharField(max_length=30, blank=True)
-    username = models.CharField(max_length=40, unique=True)
-    bio = models.TextField(blank=True, null=True,)
+    email = models.EmailField(max_length=40, unique=True, verbose_name='email')
+    first_name = models.CharField(max_length=30, blank=True, null=True,
+                                  verbose_name='first_name')
+    last_name = models.CharField(max_length=30, blank=True,
+                                 verbose_name='last_name')
+    username = models.CharField(max_length=40, unique=True,
+                                verbose_name='username')
+    bio = models.TextField(blank=True, null=True, verbose_name='biography')
     role = models.CharField(max_length=10, choices=settings.ROLES, blank=True,
-                            default=settings.USER)
+                            default=settings.USER, verbose_name='role')
     password = models.CharField(max_length=128, verbose_name='password',
                                 blank=True)
-    confirmation_code = models.CharField(max_length=30, blank=True)
+    confirmation_code = models.CharField(max_length=30, blank=True,
+                                         verbose_name='token')
 
     objects = UserManager()
 
@@ -38,6 +44,8 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['username', ]
 
     class Meta:
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
         ordering = ('-id',)
 
     def __str__(self):
@@ -62,6 +70,7 @@ class Title(models.Model):
         blank=True,
         null=True,
         db_index=True,
+        validators=[validator_year]
     )
     description = models.TextField(
         max_length=1000,
@@ -89,6 +98,10 @@ class Title(models.Model):
         related_name='titles'
     )
 
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+
     def __str__(self):
         return self.name
 
@@ -106,6 +119,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ('name',)
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def __str__(self):
         return self.name
@@ -124,6 +139,11 @@ class Genre(models.Model):
 
     class Meta:
         ordering = ('name',)
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
+    def __str__(self):
+        return self.name
 
     def __str__(self):
         return self.slug
