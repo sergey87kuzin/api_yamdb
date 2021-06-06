@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-from django.db.models.aggregates import Avg
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
@@ -25,7 +24,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
     def validate(self, data):
-        score = data.get('score')
         author = self.context['request'].user
         title_id = self.context['view'].kwargs['title_id']
         if self.context['request'].method == 'POST':
@@ -36,8 +34,6 @@ class ReviewSerializer(serializers.ModelSerializer):
                 raise ValidationError(
                     'Вы уже оставляли отзыв к данному произведению'
                 )
-        if score > 10 or score < 1:
-            raise ValidationError('Оценка может быть от 1 до 10')
         return data
 
 
@@ -79,13 +75,7 @@ class TitleCreateSerializer(serializers.ModelSerializer):
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
-    rating = serializers.SerializerMethodField()
-
-    def get_rating(self, obj):
-        rating = Title.objects.annotate(
-            title_rate=Avg('reviews__score')
-        ).filter(id=obj.id).first()
-        return rating.title_rate
+    rating = serializers.FloatField()
 
     class Meta:
         exclude = ('author',)
