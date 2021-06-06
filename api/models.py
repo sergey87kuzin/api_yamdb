@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+
 from .validators import validator_year
 
 
@@ -66,7 +67,7 @@ class Title(models.Model):
         verbose_name='Название произведения',
     )
     year = models.IntegerField(
-        'Год выпуска',
+        verbose_name='Год выпуска',
         blank=True,
         null=True,
         db_index=True,
@@ -97,6 +98,7 @@ class Title(models.Model):
         on_delete=models.CASCADE,
         related_name='titles'
     )
+
 
     class Meta:
         verbose_name = 'Произведение'
@@ -144,6 +146,9 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
+
+    def __str__(self):
+        return self.slug
 
 
 class Review(models.Model):
