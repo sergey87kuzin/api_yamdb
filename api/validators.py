@@ -1,7 +1,5 @@
 import datetime
-
 from django.utils.translation import ugettext as _
-
 from rest_framework.serializers import ValidationError
 
 
