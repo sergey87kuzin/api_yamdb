@@ -1,10 +1,9 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from .validators import validator_year
-
-
-CHOICES = (('user', 'u'), ('moderator', 'm'), ('admin', 'a'),)
 
 
 class UserManager(BaseUserManager):
@@ -16,23 +15,28 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, **extra_fields):
-        return self.create_user(email=email, role='admin', **extra_fields)
+        return self.create_user(email=email, role=settings.ADMIN,
+                                **extra_fields)
 
     def all(self):
         return self.get_queryset()
 
 
 class User(AbstractBaseUser):
-    email = models.EmailField(max_length=40, unique=True)
-    first_name = models.CharField(max_length=30, blank=True, null=True)
-    last_name = models.CharField(max_length=30, blank=True)
-    username = models.CharField(max_length=40, unique=True)
-    bio = models.TextField(blank=True, null=True,)
-    role = models.CharField(max_length=10, choices=CHOICES, blank=True,
-                            default='user')
+    email = models.EmailField(max_length=40, unique=True, verbose_name='email')
+    first_name = models.CharField(max_length=30, blank=True, null=True,
+                                  verbose_name='first_name')
+    last_name = models.CharField(max_length=30, blank=True,
+                                 verbose_name='last_name')
+    username = models.CharField(max_length=40, unique=True,
+                                verbose_name='username')
+    bio = models.TextField(blank=True, null=True, verbose_name='biography')
+    role = models.CharField(max_length=10, choices=settings.ROLES, blank=True,
+                            default=settings.USER, verbose_name='role')
     password = models.CharField(max_length=128, verbose_name='password',
                                 blank=True)
-    confirmation_code = models.CharField(max_length=30, blank=True)
+    confirmation_code = models.CharField(max_length=30, blank=True,
+                                         verbose_name='token')
 
     objects = UserManager()
 
@@ -40,14 +44,20 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['username', ]
 
     class Meta:
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
         ordering = ('-id',)
 
     def __str__(self):
         return self.email
 
-    def save(self, *args, **kwargs):
-        super(User, self).save(*args, **kwargs)
-        return self
+    @property
+    def is_admin(self):
+        return self.role == settings.ADMIN
+
+    @property
+    def is_not_user(self):
+        return self.role != settings.USER
 
 
 class Title(models.Model):
@@ -136,23 +146,25 @@ class Genre(models.Model):
         return self.name
 
 
-SCORE_CHOICES = zip(range(1, 11), range(1, 11))
-
-
 class Review(models.Model):
-    text = models.TextField('Текст')
+    text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews'
     )
-    score = models.IntegerField(choices=SCORE_CHOICES)
+    score = models.IntegerField(
+        verbose_name='Оценка произведения',
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True
+        verbose_name='Дата добавления', auto_now_add=True
     )
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews'
     )
 
     class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
         ordering = ('-pub_date',)
 
     def __str__(self):
@@ -160,7 +172,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    text = models.TextField('Текст')
+    text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments'
     )
@@ -168,10 +180,12 @@ class Comment(models.Model):
         Review, on_delete=models.CASCADE, related_name='comments'
     )
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True
+        verbose_name='Дата добавления', auto_now_add=True
     )
 
     class Meta:
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"
         ordering = ('-pub_date',)
 
     def __str__(self):
