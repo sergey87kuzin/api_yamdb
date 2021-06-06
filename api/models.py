@@ -1,8 +1,6 @@
-
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
-
-CHOICES = (('user', 'u'), ('moderator', 'm'), ('admin', 'a'),)
 
 
 class UserManager(BaseUserManager):
@@ -14,7 +12,8 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, **extra_fields):
-        return self.create_user(email=email, role='admin', **extra_fields)
+        return self.create_user(email=email, role=settings.ADMIN,
+                                **extra_fields)
 
     def all(self):
         return self.get_queryset()
@@ -26,8 +25,8 @@ class User(AbstractBaseUser):
     last_name = models.CharField(max_length=30, blank=True)
     username = models.CharField(max_length=40, unique=True)
     bio = models.TextField(blank=True, null=True,)
-    role = models.CharField(max_length=10, choices=CHOICES, blank=True,
-                            default='user')
+    role = models.CharField(max_length=10, choices=settings.ROLES, blank=True,
+                            default=settings.USER)
     password = models.CharField(max_length=128, verbose_name='password',
                                 blank=True)
     confirmation_code = models.CharField(max_length=30, blank=True)
@@ -37,15 +36,19 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', ]
 
-    class Meta():
+    class Meta:
         ordering = ('-id',)
 
     def __str__(self):
         return self.email
 
-    def save(self, *args, **kwargs):
-        super(User, self).save(*args, **kwargs)
-        return self
+    @property
+    def is_admin(self):
+        return self.role == settings.ADMIN
+
+    @property
+    def is_not_user(self):
+        return self.role != settings.USER
 
 
 class Title(models.Model):
@@ -101,7 +104,7 @@ class Category(models.Model):
     )
 
     class Meta:
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
@@ -119,7 +122,7 @@ class Genre(models.Model):
     )
 
     class Meta:
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return self.slug

@@ -1,10 +1,10 @@
-
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, viewsets
-from rest_framework.decorators import api_view
+from rest_framework import filters, viewsets
+from rest_framework.decorators import action, api_view
 from rest_framework.mixins import (
     CreateModelMixin, DestroyModelMixin, ListModelMixin,
 )
@@ -15,6 +15,7 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .filters import TitleFilter
 from .models import Category, Comment, Genre, Review, Title, User
 from .permissions import (
     AdminPermission, IsAdminOrReadOnly, OwnerAdminModeratorReadonly,
@@ -37,7 +38,7 @@ def sending_mail(self):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     send_mail('Your code', f'your confirmation code is {code}',
-              'gbgtwvkby@example.com', [email, ], fail_silently=False)
+              settings.ADMIN_EMAIL, [email, ], fail_silently=False)
     return Response(code)
 
 
@@ -45,24 +46,13 @@ def sending_mail(self):
 def make_token(self):
     email = self.data.get('email')
     code = self.data.get('confirmation_code')
-    user = User.objects.get(email=email, confirmation_code=code)
+    user = get_object_or_404(User, email=email, confirmation_code=code)
     refresh = RefreshToken.for_user(user)
 
     return Response({
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     })
-
-
-class Profile(mixins.RetrieveModelMixin,
-              mixins.UpdateModelMixin,
-              viewsets.GenericViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, SelfMadeAdminPermission]
-
-    def get_object(self):
-        return self.request.user
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -73,6 +63,20 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, AdminPermission]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['username', ]
+
+    @action(detail=False, methods=['get', 'patch'],
+            permission_classes=[IsAuthenticated, SelfMadeAdminPermission])
+    def me(self, request):
+        instance = request.user
+        if request.method == 'GET':
+            serializer = UserSerializer(instance)
+            return Response(serializer.data)
+        elif request.method == 'PATCH':
+            serializer = UserSerializer(instance, data=request.data,
+                                        partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -121,12 +125,12 @@ class CreateListDestroyViewSet(
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-
     queryset = Title.objects.all().order_by('name')
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['name', 'year', 'category__slug', 'genre__slug']
+    filterset_class = TitleFilter
+    filterset_fields = ['name', 'year', 'category', 'genre']
 
     def get_serializer_class(self):
         if self.action in ['create', 'partial_update', 'update']:
@@ -134,7 +138,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleReadSerializer
 
     def perform_create(self, serializer):
-        print(Title.objects.values())
         serializer.save(author=self.request.user)
 
 

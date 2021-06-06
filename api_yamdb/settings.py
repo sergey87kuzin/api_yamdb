@@ -152,3 +152,9 @@ SIMPLE_JWT = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+ROLES = ((ADMIN, ADMIN), (MODERATOR, MODERATOR), (USER, USER))
+ADMIN_EMAIL = 'gbgtwvkby@example.com'
