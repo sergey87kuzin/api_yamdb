@@ -23,8 +23,6 @@ api_v1_patterns = [
 ]
 
 urlpatterns = [
-    path('v1/users/me/', views.Profile.as_view(
-        {'get': 'retrieve', 'patch': 'partial_update'}), name='profile'),
     path('v1/auth/email/', views.sending_mail, name='send_mail'),
     path('v1/auth/token/', views.make_token, name='token'),
     path('v1/', include(api_v1_patterns)),
