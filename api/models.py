@@ -4,6 +4,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
+from .validators import validator_year
+
+
 class UserManager(BaseUserManager):
 
     def create_user(self, email, **extra_fields):
@@ -68,6 +71,7 @@ class Title(models.Model):
         blank=True,
         null=True,
         db_index=True,
+        validators=[validator_year]
     )
     description = models.TextField(
         max_length=1000,
@@ -95,6 +99,11 @@ class Title(models.Model):
         related_name='titles'
     )
 
+
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+
     def __str__(self):
         return self.name
 
@@ -112,6 +121,8 @@ class Category(models.Model):
 
     class Meta:
         ordering = ('name',)
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def __str__(self):
         return self.name
@@ -130,6 +141,11 @@ class Genre(models.Model):
 
     class Meta:
         ordering = ('name',)
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
+    def __str__(self):
+        return self.name
 
     def __str__(self):
         return self.slug
