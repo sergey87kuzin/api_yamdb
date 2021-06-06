@@ -1,47 +1,62 @@
-from rest_framework import viewsets, mixins, filters, pagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, viewsets
+from rest_framework.mixins import (
+    CreateModelMixin, DestroyModelMixin, ListModelMixin,
+)
+from rest_framework.pagination import PageNumberPagination
 
-from . import serializers
-from . import permissions
-from .models import Title, Genre, Category
 from .filters import TitleFilter
+from .models import Category, Genre, Title
+from .permissions import IsAdminOrReadOnly
+from .serializers import (
+    CategorySerializer, 
+    GenreSerializer,
+    TitleCreateSerializer, 
+    TitleReadSerializer,
+)
 
 
-class ListCreateDestroyViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
+class CreateListDestroyViewSet(
+    DestroyModelMixin,
+    CreateModelMixin,
+    ListModelMixin,
+    viewsets.GenericViewSet
 ):
     pass
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = serializers.TitleSerializer
-    permission_classes = [
-        permissions.ReadOnly | permissions.AdminPermission
-    ]
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = PageNumberPagination
+    filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
-    pagination_class = pagination.PageNumberPagination
+    filterset_fields = ['name', 'year', 'category', 'genre']
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'partial_update', 'update']:
+            return TitleCreateSerializer
+        return TitleReadSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
-class CategoryViewSet(ListCreateDestroyViewSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
-    serializer_class = serializers.CategorySerializer
-    permission_classes = [
-        permissions.ReadOnly | permissions.AdminPermission
-    ]
+    serializer_class = CategorySerializer
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = PageNumberPagination
     filter_backends = [filters.SearchFilter]
-    search_fields = ('name',)
-    pagination_class = pagination.PageNumberPagination
+    search_fields = ['name']
 
 
-class GenreViewSet(ListCreateDestroyViewSet):
+class GenreViewSet(CreateListDestroyViewSet):
     queryset = Genre.objects.all()
-    serializer_class = serializers.GenreSerializer
-    permission_classes = [
-        permissions.ReadOnly | permissions.AdminPermission
-    ]
+    serializer_class = GenreSerializer
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = PageNumberPagination
     filter_backends = [filters.SearchFilter]
-    search_fields = ('name',)
-    pagination_class = pagination.PageNumberPagination
+    search_fields = ['name']

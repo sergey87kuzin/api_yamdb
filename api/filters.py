@@ -1,22 +1,20 @@
-from django_filters import rest_framework as filter
+from django_filters import rest_framework as filters
 
-from .models import Title
+from.models import Title
 
 
-class TitleFilter(filter.FilterSet):
-    name = filter.CharFilter(
+class TitleFilter(filters.FilterSet):
+    genre = filters.CharFilter(
+        field_name='genre__slug'
+    )
+    category = filters.CharFilter(
+        field_name='category__slug'
+    )
+    name = filters.CharFilter(
         field_name='name',
-        lookup_expr='contains'
-    )
-    category = filter.CharFilter(
-        field_name='category__slug',
-        lookup_expr='contains'
-    )
-    genre = filter.CharFilter(
-        field_name='genre__slug',
-        lookup_expr='contains'
+        lookup_expr='icontains'
     )
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = ['name', 'genre', 'category', 'year']

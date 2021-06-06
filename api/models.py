@@ -1,7 +1,53 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 
-User = get_user_model()
+from .validators import validator_year
+
+
+CHOICES = (('user', 'u'), ('moderator', 'm'), ('admin', 'a'),)
+
+
+class UserManager(BaseUserManager):
+
+    def create_user(self, email, **extra_fields):
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.save()
+        return user
+
+    def create_superuser(self, email, **extra_fields):
+        return self.create_user(email=email, role='admin', **extra_fields)
+
+    def all(self):
+        return self.get_queryset()
+
+
+class User(AbstractBaseUser):
+    email = models.EmailField(max_length=40, unique=True)
+    first_name = models.CharField(max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=30, blank=True)
+    username = models.CharField(max_length=40, unique=True)
+    bio = models.TextField(blank=True, null=True,)
+    role = models.CharField(max_length=10, choices=CHOICES, blank=True,
+                            default='user')
+    password = models.CharField(max_length=128, verbose_name='password',
+                                blank=True)
+    confirmation_code = models.CharField(max_length=30, blank=True)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', ]
+
+    class Meta:
+        ordering = ('-id',)
+
+    def __str__(self):
+        return self.email
+
+    def save(self, *args, **kwargs):
+        super(User, self).save(*args, **kwargs)
+        return self
 
 
 class Title(models.Model):
@@ -14,13 +60,14 @@ class Title(models.Model):
         blank=True,
         null=True,
         db_index=True,
+        validators=[validator_year]
     )
     description = models.TextField(
         max_length=1000,
         blank=True,
         verbose_name='Описание',
     )
-    genres = models.ManyToManyField(
+    genre = models.ManyToManyField(
         'Genre',
         blank=True,
         verbose_name='Жанр',
@@ -42,7 +89,9 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ['name']
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
     def __str__(self):
         return self.name
@@ -59,6 +108,11 @@ class Category(models.Model):
         verbose_name='Slug',
     )
 
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
     def __str__(self):
         return self.name
 
@@ -74,5 +128,52 @@ class Genre(models.Model):
         verbose_name='Slug'
     )
 
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
     def __str__(self):
         return self.name
+
+
+SCORE_CHOICES = zip(range(1, 11), range(1, 11))
+
+
+class Review(models.Model):
+    text = models.TextField('Текст')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='reviews'
+    )
+    score = models.IntegerField(choices=SCORE_CHOICES)
+    pub_date = models.DateTimeField(
+        'Дата добавления', auto_now_add=True
+    )
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE, related_name='reviews'
+    )
+
+    class Meta:
+        ordering = ('-pub_date',)
+
+    def __str__(self):
+        return self.text[:15]
+
+
+class Comment(models.Model):
+    text = models.TextField('Текст')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='comments'
+    )
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name='comments'
+    )
+    pub_date = models.DateTimeField(
+        'Дата добавления', auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ('-pub_date',)
+
+    def __str__(self):
+        return self.text[:15]
