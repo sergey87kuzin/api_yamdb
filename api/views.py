@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.validators import validate_email
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
@@ -30,6 +32,10 @@ from .serializers import (
 @api_view(['POST'])
 def sending_mail(self):
     email = self.data.get('email')
+    try:
+        validate_email(email)
+    except ValidationError:
+        return Response('invalid email')
     user = User.objects.create_user(email=email)
     code = default_token_generator.make_token(user)
     data = {'username': code, 'confirmation_code': code}
@@ -45,6 +51,10 @@ def sending_mail(self):
 @api_view(['POST'])
 def make_token(self):
     email = self.data.get('email')
+    try:
+        validate_email(email)
+    except ValidationError:
+        return Response('invalid email')
     code = self.data.get('confirmation_code')
     user = get_object_or_404(User, email=email, confirmation_code=code)
     refresh = RefreshToken.for_user(user)

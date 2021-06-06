@@ -7,6 +7,7 @@ from .models import Category, Comment, Genre, Review, Title, User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
 
     class Meta:
         fields = '__all__'
@@ -15,6 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
             'confirmation_code': {'write_only': True}
         }
+
+    def validate_email(self, value):
+        lower_email = value.lower()
+        if User.objects.filter(email__iexact=lower_email).exists():
+            raise serializers.ValidationError("Duplicate")
+        return lower_email
 
 
 class ReviewSerializer(serializers.ModelSerializer):
