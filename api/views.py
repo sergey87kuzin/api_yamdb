@@ -57,13 +57,12 @@ def make_token(self):
     except ValidationError:
         return Response('invalid email')
     code = self.data.get('confirmation_code')
+    user = get_object_or_404(User, email=email, confirmation_code=code)
     try:
-        default_token_generator.check_token(code)
+        default_token_generator.check_token(user, code)
     except ValidationError:
         return Response('invalid code')
-    user = get_object_or_404(User, email=email, confirmation_code=code)
     refresh = RefreshToken.for_user(user)
-
     return Response({
         'refresh': str(refresh),
         'access': str(refresh.access_token),
