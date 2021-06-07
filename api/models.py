@@ -145,9 +145,6 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
-    def __str__(self):
-        return self.slug
-
 
 class Review(models.Model):
     text = models.TextField(verbose_name='Текст')
@@ -156,7 +153,10 @@ class Review(models.Model):
     )
     score = models.IntegerField(
         verbose_name='Оценка произведения',
-        validators=[MinValueValidator(1), MaxValueValidator(10)]
+        validators=[
+            MinValueValidator(1, 'Оценка не может быть меньше 1'),
+            MaxValueValidator(10, 'Оценка не может быть выше 10')
+        ]
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата добавления', auto_now_add=True
