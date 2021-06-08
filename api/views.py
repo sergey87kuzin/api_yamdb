@@ -174,6 +174,3 @@ class GenreViewSet(CreateListDestroyViewSet):
     pagination_class = PageNumberPagination
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
-
-def something():
-    pass
